@@ -12,6 +12,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+# import uuid
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -20,25 +21,22 @@ mongo = PyMongo(app)
 url= "https://api.worldweatheronline.com/premium/v1/weather.ashx?"
 past_url = "https://api.worldweatheronline.com/premium/v1/past-weather.ashx?"
 
-
-# Route for home page
+#Route for home page
 """
-Returns HTML with JS that takes in zipcode/dates
-and feeds them to next route
+Returns HTML with JS that takes in zipcode/dates and feeds them to next route
 """
 @app.route("/")
 def home():
     return render_template("index.html")
+     
 
-
-# Route that intakes dates and zipcodes
+#Route that intakes and zips
 """
-Historical weather and migraine history, combine
-them into a df, store that df in mongo
+ Historical weather and migraine history, combine into df, store that df in mongo
 """
 @app.route("/userdata/<dates>/<zipcode>")
 def createUser(dates, zipcode):
-    id = uuid.uuid4()
+    # id = uuid.uuid4()
     zipcode = zipcode
     dates= dates
     dates=dates.split(",")
@@ -46,6 +44,7 @@ def createUser(dates, zipcode):
     dates_df = pd.DataFrame(dates,columns=['Dates'])
     dates_df["Migraine"] = 1
     history_dict ={
+    # "user_id":[],
     "Dates":[],
     "Cloudcover":[],
     "Humidity":[],
@@ -64,6 +63,7 @@ def createUser(dates, zipcode):
         enddate=(datetime.today()-relativedelta(months=i-1)).strftime('%Y-%m-%d')
         responses = requests.get(f"{past_url}key={lw_key}&q={zipcode}&date={date}&enddate={enddate}&tp=24&mca=no&aqi=yes&format=json").json()
         responses = responses['data']
+        # history_dict["user_id"].append(id)
         history_dict["Dates"].append([responses["weather"][i]["date"] for i in range(len(responses["weather"]))])
         history_dict["Cloudcover"].append([responses["weather"][i]["hourly"][0]["cloudcover"] for i in range(len(responses["weather"]))])
         history_dict["Humidity"].append([responses["weather"][i]["hourly"][0]["humidity"] for i in range(len(responses["weather"]))])
@@ -89,13 +89,12 @@ def createUser(dates, zipcode):
     history_df= pd.merge(history_df,dates_df, on = 'Dates', how = 'left')
     history_df= history_df.fillna(0)
     history_df= history_df.iloc[1:]
-    # history_data = json.loads(history_df.to_json(orient = "records"))
     collection = mongo.db.history
     history_df.reset_index(inplace=True)
     data_dict = history_df.to_dict("records")
     collection.insert_many(data_dict)
     print("Data inserted")
-    return "Data inserted"
+    return redirect(f"/prediction/{zipcode}")
 # Route to show second page (forecast)
 """
 HTML and JS that loads data from the next route
@@ -105,10 +104,10 @@ HTML and JS that loads data from the next route
 Import data from Mongo, perform ML, make predictions
 return JSONIFIED data with weather, predictions, and anything else.
 """
-@app.route("/predictions")
-def forecast_call_ml():
+@app.route("/prediction/<zipcode>")
+def forecast_call_ml(zipcode):
     # url= "https://api.worldweatheronline.com/premium/v1/weather.ashx?"
-    zipcode = input("Enter 5-digit Zipcode:")
+    zipcode = zipcode
     response = requests.get(f"{url}key={lw_key}&q={zipcode}&num_of_days=7&tp=24&mca=no&aqi=yes&format=json").json()
     response = response["data"]
     weather_dict ={
@@ -189,8 +188,9 @@ def forecast_call_ml():
     print("Predictions inserted")
 
     # render an index.html template and pass it the data you retrieved from the database
-    return (f"We did it! Machine learning achieved! {forecast_data} {json_str}")
-    # return render_template("results_index.html", forecast_predictions = forecast_predictions, forecast_data = forecast_data)
+    # return (f"We did it! Machine learning achieved! {forecast_data} {json_str}")
+    # return render_template("results_index.html")
+    return render_template("results_index.html", forecast_predictions = forecast_predictions, forecast_data = forecast_data)
 
 if __name__ == "__main__":
     app.run(debug=True)
