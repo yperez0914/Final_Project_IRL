@@ -20,6 +20,7 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/forecast_db"
 mongo = PyMongo(app)
 url= "https://api.worldweatheronline.com/premium/v1/weather.ashx?"
 past_url = "https://api.worldweatheronline.com/premium/v1/past-weather.ashx?"
+mongo.db.history.drop()
 
 #Route for home page
 """
@@ -190,7 +191,7 @@ def forecast_call_ml(zipcode):
     # render an index.html template and pass it the data you retrieved from the database
     # return (f"We did it! Machine learning achieved! {forecast_data} {json_str}")
     # return render_template("results_index.html")
-    return render_template("results_index.html", forecast_predictions = forecast_predictions, forecast_data = forecast_data)
+    return render_template("results_index.html", forecast_predictions = json_str, forecast_data = forecast_data)
 
 if __name__ == "__main__":
     app.run(debug=True)
