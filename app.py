@@ -187,6 +187,7 @@ def forecast_call_ml(zipcode):
     lists = forecast_predictions.tolist()
     json_str = json.dumps(lists)
     print("Predictions inserted")
+    print(f'Forecast_Data{forecast_data}')
 
     # render an index.html template and pass it the data you retrieved from the database
     # return (f"We did it! Machine learning achieved! {forecast_data} {json_str}")
