@@ -134,10 +134,12 @@ For this project, our objective is to use Machine Learning to predict weather-re
     ```
 <br>
 
-4. Save data to MongoDB. Pull data from MongoDB in new route for results page.***Under development***
+4. Save data to MongoDB. Pull data from MongoDB in new route for results page. ***Under development***
 <br>
 
 ## What's Next?
 <br>
-This project was only the beginning! We are currently working on saving the user prediction results so that we can allow the user to identify whether the prediction was correct or not and combine the input with the predictions data to retrain the model. Users will also be asked to create a username so we can create a unique ID for each user for their data in MongoDB. 
+This project was only the beginning! We are currently working on saving the user prediction results so that we can allow the user to identify whether the prediction was correct or not and combine the input with the predictions data to retrain the Machine Learning model. Users will also be asked to create a username so we can create a unique ID for each user for their data in MongoDB. 
+<br>
+Coming soon: The reveal of our domain name!
    
